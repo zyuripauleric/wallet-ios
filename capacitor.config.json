@@ -1,0 +1,6 @@
+{
+  "appId": "com.wallet.local",
+  "appName": "Wallet",
+  "webDir": "www",
+  "ios": { "contentInset": "never" }
+}

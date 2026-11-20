@@ -1,0 +1,444 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Wallet</title>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#1d5a4d"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="Wallet"><meta name="format-detection" content="telephone=no"><link rel="apple-touch-icon" href="icons/icon-180.png"><link rel="icon" href="icons/icon-192.png">
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="styles.css">
+<script>
+(function () {
+  var t = null;
+  try { t = localStorage.getItem("wl-theme"); } catch (e) {}
+  if (t !== "light" && t !== "dark") t = window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  document.documentElement.setAttribute("data-theme", t);
+})();
+</script>
+
+<div class="app">
+  <header class="top">
+    <div>
+      <h1>Wallet</h1>
+      <p id="status" class="status" role="status">Loading your wallets…</p>
+      <div class="pills" id="pills" aria-label="Snapshot"></div>
+    </div>
+    <div class="cur">
+      <button type="button" class="themesw" id="themeSw" role="switch" aria-checked="false" aria-label="Dark mode">
+        <span class="knob" aria-hidden="true">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><path d="M12 2.5v2.3M12 19.2v2.3M2.5 12h2.3M19.2 12h2.3M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6"/></svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 14.2A8.6 8.6 0 0 1 9.8 3.5a8.6 8.6 0 1 0 10.7 10.7z"/></svg>
+        </span>
+      </button>
+      <button type="button" class="btn" id="qaWallet">+ Wallet</button>
+      <button type="button" class="btn" id="qaCat">+ Category</button>
+      <button type="button" class="btn icon" id="custHdr" aria-pressed="false" title="Customize layout" aria-label="Customize layout" hidden><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
+      <label class="sr" for="disp">Show amounts in</label>
+      <select id="disp"></select>
+    </div>
+  </header>
+
+  <div id="rangeHost">
+    <div class="rangebar">
+      <div class="field"><label for="rFrom">From</label><input type="date" id="rFrom"></div>
+      <div class="field"><label for="rTo">To</label><input type="date" id="rTo"></div>
+      <div class="presets" role="group" aria-label="Quick ranges">
+        <button type="button" class="btn sm" data-preset="month" aria-pressed="false">This month</button>
+        <button type="button" class="btn sm" data-preset="lastmonth" aria-pressed="false">Last month</button>
+        <button type="button" class="btn sm" data-preset="d30" aria-pressed="false">Last 30 days</button>
+        <button type="button" class="btn sm" data-preset="ytd" aria-pressed="false">Year to date</button>
+        <button type="button" class="btn sm" data-preset="all" aria-pressed="false">All time</button>
+      </div>
+      <div class="rexp">
+        <div class="dd" id="ddIO">
+          <button type="button" class="btn primary sm" id="ddBtn" aria-haspopup="menu" aria-expanded="false">Import / Export <span aria-hidden="true">▾</span></button>
+          <div class="ddmenu" id="ddMenu" role="menu" hidden>
+            <button type="button" role="menuitem" id="rExportX">Export Excel</button>
+            <button type="button" role="menuitem" id="rImport">Bulk upload (CSV or Excel)</button>
+            <button type="button" role="menuitem" id="rTemplate">Download upload template</button>
+          </div>
+        </div>
+        <input type="file" id="rImportFile" accept=".csv,.xlsx,.xls,text/csv" hidden>
+      </div>
+    </div>
+    <p class="err" id="rErr" role="alert"></p>
+    <p class="status" id="rMsg" role="status"></p>
+  </div>
+
+  <div class="navrow">
+    <div class="tabs" role="group" aria-label="View">
+      <button type="button" id="tabDash" aria-pressed="true" title="Dashboard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span class="lb">Dashboard</span></button>
+      <button type="button" id="tabRec" aria-pressed="false" title="Recurring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span class="lb">Recurring</span></button>
+      <button type="button" id="tabRates" aria-pressed="false" title="Rates"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg><span class="lb">Rates</span></button>
+    </div>
+  </div>
+
+  <div class="view" id="dashView">
+    <div class="dashx">
+        <div class="dbar" hidden><div class="dtools"><button type="button" class="btn sm" id="dCust" aria-pressed="false">Customize layout</button><button type="button" class="btn sm" id="dReset" hidden>Reset layout</button></div></div>
+        <p class="hint" id="dHint" hidden>Drag a panel's pill to move it and its corner handle to resize it. Use the red Hide pill to remove a widget, and the + buttons below to bring it back. Double-click the corner for automatic height. In My accounts, drag a cell to move it or use Cell size to make the cells smaller or larger.</p>
+        <div class="addtray" id="dTray" hidden></div>
+        <div id="dGrid" class="cgrid">
+<div class="dp" data-pid="accts"><div class="dh">⠿ My accounts</div><section class="panel" aria-label="My accounts">
+          <div class="phead"><h3>My accounts</h3><span class="asort"><label for="aSort">Sort</label><select id="aSort"><option value="custom">My order (drag)</option><option value="name">Name A–Z</option><option value="bal-desc">Balance: high to low</option><option value="bal-asc">Balance: low to high</option><option value="type">Type</option></select></span><span class="acsz"><label for="aSize">Cell size</label><input type="range" id="aSize" min="120" max="340" step="10"></span><span class="hint" id="aCount"></span></div>
+          <div id="dAccts"></div>
+        </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="cards"><div class="dh">⠿ Credit cards</div><section class="panel" aria-label="Credit cards">
+          <div class="phead"><h3>Credit cards</h3></div>
+          <div id="dCards"></div>
+        </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="tiles"><div class="dh">⠿ Summary</div><div class="tiles" id="dTiles"></div><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="cashflow"><div class="dh">⠿ Cash flow</div><section class="panel" aria-label="Cash flow">
+          <div class="phead"><h3>Cash flow</h3></div>
+          <div id="dCash"></div>
+        </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="spark"><div class="dh">⠿ Spending over time</div><section class="panel" aria-label="Spending over time">
+              <div class="phead"><h3>Spending over time</h3><span class="num" id="dSpTot"></span></div>
+              <div id="dSpark"></div>
+            </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="daily"><div class="dh">⠿ Daily expenses</div><section class="panel" aria-label="Daily expenses">
+          <h3 style="margin-bottom:10px">Daily expenses</h3>
+          <div id="dDaily"></div>
+        </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="activity"><div class="dh">⠿ Recent activity</div><section class="panel" aria-label="Recent activity">
+            <div class="phead"><h3>Recent activity</h3><div class="hright"><span class="hint" id="dActHint"></span></div></div>
+            <div class="actbar top">
+              <div class="actleft">
+                <select id="aWal" aria-label="Filter by wallet"></select>
+                <button type="button" class="selmini" id="aSelBtn" aria-pressed="false">Select</button>
+              </div>
+              <div class="achips" id="aKinds" role="group" aria-label="Filter by type">
+                <button type="button" class="btn" data-ak="all" aria-pressed="true">All</button>
+                <button type="button" class="btn" data-ak="out" aria-pressed="false">Expenses</button>
+                <button type="button" class="btn" data-ak="in" aria-pressed="false">Income</button>
+                <button type="button" class="btn" data-ak="xfer" aria-pressed="false">Transfers</button>
+              </div>
+            </div>
+            <div class="bulkbar" id="aBulk" role="group" aria-label="Bulk actions" hidden></div>
+            <div id="dAct"></div>
+          </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="expenses"><div class="dh">⠿ All expenses</div><section class="panel" aria-label="All expenses">
+          <div class="phead"><h3>All expenses</h3></div>
+          <div class="pers" id="dPer" role="group" aria-label="Period"></div>
+          <div id="dDonut"></div>
+        </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="budgets"><div class="dh">⠿ Budgets</div><section class="panel" aria-label="Budgets">
+          <div class="phead"><h3>Budgets</h3><button type="button" class="btn sm" id="uAddBtn" aria-expanded="false" aria-controls="uForm">+ Budget</button></div>
+          <div id="dBudgets"></div>
+          <form id="uForm" hidden novalidate>
+            <div class="field"><label for="uName">Name</label><input type="text" id="uName" maxlength="30" placeholder="Groceries" autocomplete="off"></div>
+            <div class="row2">
+              <div class="field"><label for="uAmt" id="uAmtL">Monthly amount</label><input type="text" id="uAmt" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
+              <div class="field"><label for="uCats">Tracks categories (optional)</label><input type="text" id="uCats" maxlength="80" placeholder="Same as name" autocomplete="off"></div>
+            </div>
+            <p class="err" id="uErr" role="alert"></p>
+            <div class="formbtns"><button class="btn primary" type="submit" id="uSave">Add budget</button><button class="btn" type="button" id="uCancel">Cancel</button><button class="btn" type="button" id="uDelete" hidden>Delete budget</button></div>
+          </form>
+        </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="savings"><div class="dh">⠿ My savings</div><section class="panel" aria-label="My savings">
+          <div class="phead"><h3>My savings</h3><button type="button" class="btn sm" id="gAddBtn" aria-expanded="false" aria-controls="gForm">+ Goal</button></div>
+          <div id="dGoals"></div>
+          <form id="gForm" hidden novalidate>
+            <div class="field"><label for="gName">Goal name</label><input type="text" id="gName" maxlength="30" placeholder="New laptop" autocomplete="off"></div>
+            <div class="row2">
+              <div class="field"><label for="gTarget">Target</label><input type="text" id="gTarget" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
+              <div class="field"><label for="gSaved">Saved so far</label><input type="text" id="gSaved" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
+            </div>
+            <div class="field"><label for="gCur">Currency</label><select id="gCur"></select></div>
+            <p class="err" id="gErr" role="alert"></p>
+            <div class="formbtns"><button class="btn primary" type="submit" id="gSave">Add goal</button><button class="btn" type="button" id="gCancel">Cancel</button><button class="btn" type="button" id="gDelete" hidden>Delete goal</button></div>
+          </form>
+        </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="shortcuts"><div class="dh">⠿ Shortcuts</div><section class="panel" aria-label="Shortcuts">
+              <h3 style="margin-bottom:10px">Super Shortcut</h3>
+              <div class="sc" id="dSc">
+                <button type="button" data-sc="tx"><span class="lbl"><i class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg></i>Add a transaction</span><span class="go" aria-hidden="true">→</span></button>
+                <button type="button" data-sc="goals"><span class="lbl"><i class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7a2 2 0 0 1 2-2h4l2 2h6a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/></svg></i>Add a savings goal</span><span class="go" aria-hidden="true">→</span></button>
+                <button type="button" data-sc="budget"><span class="lbl"><i class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="4.5"/></svg></i>Monthly budget</span><span class="go" aria-hidden="true">→</span></button>
+                <button type="button" data-sc="report"><span class="lbl"><i class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></i>Reports and export</span><span class="go" aria-hidden="true">→</span></button>
+                <button type="button" data-sc="wallets"><span class="lbl"><i class="sic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="3"/><path d="M3 10h18M16 15h2"/></svg></i>Add an account</span><span class="go" aria-hidden="true">→</span></button>
+              </div>
+            </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="ccal"><div class="dh">⠿ Calendar</div><section class="cal" aria-label="Calendar">
+        <nav class="monthbar" id="monthBar" aria-label="Month">
+      <button class="btn icon" id="prev" type="button" aria-label="Previous month">‹</button>
+      <h2 id="monthLabel" aria-live="polite"></h2>
+      <button class="btn icon" id="next" type="button" aria-label="Next month">›</button>
+      <button class="btn" id="today" type="button">Today</button>
+    </nav>
+        <div class="dow" aria-hidden="true"><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span><span>Week</span></div>
+        <div class="grid" id="grid"></div>
+        <p class="legend">Each day shows money in minus money out, converted to your display currency. Transfers between wallets are not counted. Darker color means a bigger day for the month.</p>
+      </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="cday"><div class="dh">⠿ Day log</div><aside class="day" aria-label="Day log">
+        <div>
+          <h3 id="dayTitle"></h3>
+          <div class="daynet"><span id="dayCount"></span><span class="num" id="dayNet"></span></div>
+        </div>
+        <ul class="list" id="txList"></ul>
+        <p class="editnote" id="tEditNote" hidden>Editing this transaction. Change anything below, then save.</p>
+        <p class="empty" id="noWallet" hidden>Add an account first, then you can log transactions. <button type="button" class="linkbtn" data-addacct>Add an account</button></p>
+        <form id="form" novalidate>
+          <fieldset class="field">
+            <legend>Type</legend>
+            <div class="seg">
+              <input type="radio" name="kind" id="kOut" value="out" checked><label class="l" for="kOut">Expense</label>
+              <input type="radio" name="kind" id="kIn" value="in"><label class="w" for="kIn">Income</label>
+              <input type="radio" name="kind" id="kXfer" value="xfer"><label class="a" for="kXfer">Transfer</label>
+            </div>
+          </fieldset>
+          <div class="row2">
+            <div class="field"><label for="amt" id="amtLbl">Amount</label><input type="text" id="amt" inputmode="decimal" enterkeyhint="done" placeholder="0.00 or 120+45.5" autocomplete="off"></div>
+            <div class="field"><label for="wSel" id="wLbl">Wallet</label><select id="wSel"></select></div>
+          </div>
+          <div class="row2" id="xferRow" hidden>
+            <div class="field"><label for="toSel">To wallet</label><select id="toSel"></select></div>
+            <div class="field" id="amt2Box"><label for="amt2" id="amt2Lbl">Amount received</label><input type="text" id="amt2" inputmode="decimal" placeholder="auto" autocomplete="off"></div>
+          </div>
+          <small class="hint" id="xferHint"></small>
+          <div class="field" id="catBox">
+            <label for="cat">Category</label>
+            <input type="text" id="cat" maxlength="30" list="catList" placeholder="Food &amp; Drinks" autocomplete="off">
+            <datalist id="catList"></datalist>
+            <label for="sub" style="margin-top:6px">Subcategory (optional)</label><input type="text" id="sub" maxlength="40" list="subList" placeholder="Pick or type" autocomplete="off"><datalist id="subList"></datalist>
+          </div>
+          <div class="field"><label for="note">Note (optional)</label><input type="text" id="note" maxlength="140" placeholder="Where, what for" autocomplete="off"></div>
+          <div class="field" id="tDateRow" hidden><label for="tDate">Date</label><input type="date" id="tDate"></div>
+          <p class="err" id="err" role="alert"></p>
+          <div class="formbtns"><button class="btn primary" type="submit" id="add">Add transaction</button><button class="btn" type="button" id="tCancel" hidden>Cancel</button></div>
+        </form>
+      </aside><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="cbudget"><div class="dh">⠿ Monthly budget</div><section class="panel" id="budgetPanel" aria-label="Monthly budget">
+      <div class="phead"><h3>Monthly spending budget</h3><button type="button" class="btn sm" id="bEdit" aria-expanded="false" aria-controls="bForm">Set budget</button></div>
+      <div id="bMeter"></div>
+      <form id="bForm" hidden novalidate>
+        <div class="field"><label for="bAmt">Budget per month</label><input type="text" id="bAmt" inputmode="decimal" placeholder="e.g. 30000 (blank = none)" autocomplete="off"></div><select id="bCur" hidden aria-hidden="true"></select>
+        <div class="field"><label for="bGoal">Monthly savings goal (optional)</label><input type="text" id="bGoal" inputmode="decimal" placeholder="e.g. 5000000 (blank = none)" autocomplete="off"></div>
+        <p class="err" id="bErr" role="alert"></p>
+        <div class="formbtns"><button class="btn primary" type="submit">Save budget</button><button class="btn" type="button" id="bCancel">Cancel</button></div>
+      </form>
+    </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="rstats"><div class="dh">⠿ Report summary</div><dl class="stats" id="rStats" aria-label="Report summary"></dl><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="rchart"><div class="dh">⠿ Cumulative net cash flow</div><section class="panel" aria-label="Cumulative net cash flow">
+      <h3>Cumulative net cash flow</h3>
+      <div id="rChart"></div>
+    </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="rexp"><div class="dh">⠿ Spending by category</div><section class="panel" aria-label="Spending by category">
+        <div class="phead"><h3>Spending by category</h3></div>
+        <div id="rExp"></div>
+      </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="rinc"><div class="dh">⠿ Income by category</div><section class="panel" aria-label="Income by category">
+        <div class="phead"><h3>Income by category</h3></div>
+        <div id="rInc"></div>
+      </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="rwal"><div class="dh">⠿ By wallet</div><section class="panel" aria-label="By wallet">
+      <div class="phead"><h3>By wallet</h3></div>
+      <div id="rWal"></div>
+    </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+<div class="dp" data-pid="rdaily"><div class="dh">⠿ Daily breakdown</div><section class="panel" aria-label="Daily breakdown">
+      <div class="phead"><h3>Daily breakdown</h3><button type="button" class="btn sm" id="sortBtn">Newest first ↓</button></div>
+      <div id="rDaily"></div>
+    </section><div class="rz" title="Drag to resize · double-click for automatic height"></div></div>
+        </div>
+        <p class="empty" id="dEmpty" hidden>All widgets are hidden. Choose Customize layout to add them back.</p>
+      </div>
+  </div>
+
+  <div class="view" id="recView" hidden>
+    <div class="tiles" id="recTiles" style="margin-bottom:14px"></div>
+    <section class="panel" aria-label="Recurring">
+      <div class="phead"><h3>Recurring</h3><button type="button" class="btn primary sm" id="recNew">+ New</button></div>
+      <div id="recBody"></div>
+      <div id="rOrph" style="margin-top:12px" hidden></div>
+    </section>
+  </div>
+
+  <div class="view" id="ratesView" hidden>
+    <div class="convbar">
+      <div class="field"><label for="rBase">Rates for 1 unit of</label><select id="rBase"></select></div>
+      <div class="field"><label for="rYear">Show</label><select id="rYear"></select></div>
+      <button type="button" class="btn sm" id="rFetch">Update rates</button>
+      <button type="button" class="btn sm" id="rReset">Reset latest rates</button>
+      <p class="convnote">Every month locks automatically at its closing rate as soon as it ends, even months with no transactions, and then stays put. The open month follows the live rate, refreshed every 10 minutes while the page is open. Type over a rate to override it; unlock a month to edit its rates.</p>
+    </div>
+    <section class="panel" aria-label="Monthly closing rates">
+      <h3>Monthly closing rates</h3>
+      <p class="legend" id="rSubT"></p>
+      <div id="rTable"></div>
+      <p class="legend" id="rNote"></p>
+    </section>
+  </div>
+</div>
+
+  <dialog id="recDlg" aria-labelledby="recDlgT">
+    <div class="dlghead"><h3 id="recDlgT">New recurring</h3><button type="button" class="btn icon sm" id="recClose" aria-label="Close">✕</button></div>
+      <div class="dtabs" id="rTabs" role="group" aria-label="Recurring type">
+        <button type="button" data-rt="repeat" aria-pressed="true">Repeat</button>
+        <button type="button" data-rt="installment" aria-pressed="false">Installment</button>
+        <button type="button" data-rt="subscription" aria-pressed="false">Subscription</button>
+      </div>
+      <div class="field" style="margin-top:12px"><label for="rAcct">Account</label><select id="rAcct"></select></div>
+      <form id="rForm" novalidate>
+        <div class="row2">
+          <div class="field" id="rKindBox"><label for="rKind">Type</label><select id="rKind"><option value="out">Expense</option><option value="in">Income</option></select></div>
+          <div class="field" id="rNameBox"><label for="rName" id="rNameL">Name (optional)</label><input type="text" id="rName" maxlength="40" autocomplete="off"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="rAmt" id="rAmtL">Amount</label><input type="text" id="rAmt" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
+          <div class="field" id="rFreqBox"><label for="rFreq">Repeats</label><select id="rFreq"></select></div>
+          <div class="field" id="rMonthsBox"><label for="rMonths">Number of months</label><input type="text" id="rMonths" inputmode="numeric" maxlength="3" placeholder="12" autocomplete="off"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="rStart" id="rStartL">Start date</label><input type="date" id="rStart"></div>
+          <div class="field" id="rStmtBox"><label for="rStmt">Statement day (1-31)</label><input type="text" id="rStmt" inputmode="numeric" maxlength="2" placeholder="e.g. 25" autocomplete="off"></div>
+          <div class="field" id="rEndBox"><label for="rEnd">End date (optional)</label><input type="date" id="rEnd"></div>
+        </div>
+        <div class="row2" id="rModeRow">
+          <div class="swrow">
+            <div class="swtxt"><b id="rFullT">Charge full price on purchase date</b><small id="rFullH">Off: billed monthly on each statement date</small></div>
+            <button type="button" class="sw" id="rFull" role="switch" aria-checked="false" aria-labelledby="rFullT"></button>
+          </div>
+          <select id="rMode" hidden><option value="amortize">Monthly amortization on each statement date</option><option value="full">Full price on the purchase date</option></select>
+        </div>
+        <div class="fsec" id="rFeesHead" hidden>Interest &amp; fees</div>
+        <div class="row2" id="rIntRow" hidden>
+          <div class="field" id="rIntBox"><label for="rRateType">Interest</label><select id="rRateType"><option value="none">No interest</option><option value="addon_m">Add-on rate, % per month</option><option value="addon_y">Add-on rate, % per annum</option><option value="reducing">Reducing balance, % per annum</option></select></div>
+          <div class="field" id="rRateBox" hidden><label for="rRate" id="rRateL">Rate (%)</label><input type="text" id="rRate" inputmode="decimal" placeholder="0.45" autocomplete="off"></div>
+        </div>
+        <div class="row2" id="rFeeRow" hidden>
+          <div class="field" id="rFeeBox"><label for="rFee">Monthly fee (optional)</label><input type="text" id="rFee" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
+          <div class="field" id="rChargeBox"><label for="rCharge">One-time charge (optional)</label><input type="text" id="rCharge" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
+        </div>
+        <div class="field" id="rChargeNameBox" hidden><label for="rChargeName">Charge name</label><input type="text" id="rChargeName" maxlength="30" placeholder="Processing fee" autocomplete="off"></div>
+        <div class="calc" id="rCalc" hidden></div>
+        <div class="row2">
+          <div class="field"><label for="rCat">Category</label><input type="text" id="rCat" maxlength="30" list="rCatList" placeholder="Bills" autocomplete="off"><datalist id="rCatList"></datalist><label for="rSub" style="margin-top:6px">Subcategory (optional)</label><input type="text" id="rSub" maxlength="40" list="rSubList" placeholder="Pick or type" autocomplete="off"><datalist id="rSubList"></datalist></div>
+          <div class="field" id="rPayeeBox"><label for="rPayee">Payee (optional)</label><input type="text" id="rPayee" maxlength="40" autocomplete="off"></div>
+        </div>
+        <small class="hint" id="rHint"></small>
+        <p class="err" id="rErr" role="alert"></p>
+        <div class="formbtns"><button class="btn primary" type="submit" id="rSave">Add repeat</button><button class="btn" type="button" id="rCancel">Cancel</button></div>
+      </form>
+  </dialog>
+
+  <dialog id="txDlg" aria-labelledby="eTitle">
+    <div class="dlghead"><h3 id="eTitle">Edit transaction</h3><button type="button" class="btn icon sm" id="eClose" aria-label="Close">✕</button></div>
+    <form id="eForm" novalidate>
+      <fieldset class="field">
+        <legend>Type</legend>
+        <div class="seg">
+          <input type="radio" name="ekind" id="eOut" value="out" checked><label class="l" for="eOut">Expense</label>
+          <input type="radio" name="ekind" id="eIn" value="in"><label class="w" for="eIn">Income</label>
+          <input type="radio" name="ekind" id="eXfer" value="xfer"><label class="a" for="eXfer">Transfer</label>
+        </div>
+      </fieldset>
+      <div class="row2">
+        <div class="field"><label for="eAmt" id="eAmtL">Amount</label><input type="text" id="eAmt" inputmode="decimal" placeholder="0.00 or 120+45.5" autocomplete="off"></div>
+        <div class="field"><label for="eDate">Date</label><input type="date" id="eDate"></div>
+      </div>
+      <div class="field"><label for="eW" id="eWL">Wallet</label><select id="eW"></select></div>
+      <div class="row2" id="eXferRow" hidden>
+        <div class="field"><label for="eTo">To wallet</label><select id="eTo"></select></div>
+        <div class="field" id="eAmt2Box"><label for="eAmt2" id="eAmt2L">Amount received</label><input type="text" id="eAmt2" inputmode="decimal" placeholder="auto" autocomplete="off"></div>
+      </div>
+      <small class="hint" id="eHint"></small>
+      <div class="field" id="eCatBox"><label for="eCat">Category</label><input type="text" id="eCat" maxlength="30" list="eCatList" placeholder="Food &amp; Drinks" autocomplete="off"><datalist id="eCatList"></datalist><label for="eSub" style="margin-top:6px">Subcategory (optional)</label><input type="text" id="eSub" maxlength="40" list="eSubList" placeholder="Pick or type" autocomplete="off"><datalist id="eSubList"></datalist></div>
+      <div class="field"><label for="eNote">Note (optional)</label><input type="text" id="eNote" maxlength="140" placeholder="Where, what for" autocomplete="off"></div>
+      <p class="err" id="eErr" role="alert"></p>
+      <div class="formbtns"><button class="btn primary" type="submit" id="eSave">Save changes</button><button class="btn" type="button" id="eCancel">Cancel</button><button class="btn" type="button" id="eDel">Delete</button></div>
+    </form>
+  </dialog>
+
+  <dialog id="acctDlg" aria-labelledby="wFormTitle">
+    <div class="dlgmain">
+    <div class="dlghead"><h3 id="wFormTitle">Add account</h3><button type="button" class="btn icon sm" id="acctClose" aria-label="Close">✕</button></div>
+    <div class="dtabs" id="aTabs" role="group" aria-label="Account actions" hidden>
+      <button type="button" id="aTabTx" aria-pressed="true">New transaction</button>
+      <button type="button" id="aTabAcct" aria-pressed="false">Account maintenance</button>
+    </div>
+    <form id="aTxForm" novalidate hidden>
+      <p class="actx" id="aCtx"></p>
+      <fieldset class="field">
+        <legend>Transaction type</legend>
+        <div class="seg">
+          <input type="radio" name="akind" id="aOut" value="out" checked><label class="l" for="aOut">Expense</label>
+          <input type="radio" name="akind" id="aIn" value="in"><label class="w" for="aIn">Income</label>
+          <input type="radio" name="akind" id="aXfer" value="xfer"><label class="a" for="aXfer">Transfer</label>
+        </div>
+      </fieldset>
+      <div class="row2">
+        <div class="field"><label for="aAmt" id="aAmtL">Amount</label><input type="text" id="aAmt" inputmode="decimal" placeholder="0.00 or 120+45.5" autocomplete="off"></div>
+        <div class="field"><label for="aDate">Date</label><input type="date" id="aDate"></div>
+      </div>
+      <div class="row2" id="aXferRow" hidden>
+        <div class="field"><label for="aTo">To account</label><select id="aTo"></select></div>
+        <div class="field" id="aAmt2Box"><label for="aAmt2" id="aAmt2L">Amount received</label><input type="text" id="aAmt2" inputmode="decimal" placeholder="auto" autocomplete="off"></div>
+      </div>
+      <small class="hint" id="aXferHint"></small>
+      <div class="row2">
+        <div class="field" id="aCatBox"><label for="aCat">Category</label><input type="text" id="aCat" maxlength="30" list="aCatList" placeholder="Food &amp; Drinks" autocomplete="off"><datalist id="aCatList"></datalist><label for="aSub" style="margin-top:6px">Subcategory (optional)</label><input type="text" id="aSub" maxlength="40" list="aSubList" placeholder="Pick or type" autocomplete="off"><datalist id="aSubList"></datalist></div>
+        <div class="field"><label for="aPay">Payment type</label>
+          <select id="aPay"><option>Cash</option><option>Debit card</option><option>Credit card</option><option>Bank transfer</option><option>E-wallet</option><option>Check</option><option>Other</option></select></div>
+      </div>
+      <div class="row2">
+        <div class="field" id="aPayeeBox"><label for="aPayee" id="aPayeeL">Payee</label><input type="text" id="aPayee" maxlength="40" placeholder="Who you paid" autocomplete="off"></div>
+        <div class="field"><label for="aLabels">Labels</label><input type="text" id="aLabels" maxlength="60" placeholder="trip, work" autocomplete="off"><small class="hint">Separate labels with commas.</small></div>
+      </div>
+      <div class="field"><label for="aNote">Note (optional)</label><input type="text" id="aNote" maxlength="140" placeholder="Where, what for" autocomplete="off"></div>
+      <p class="err" id="aErr" role="alert"></p>
+      <div class="formbtns"><button class="btn primary" type="submit" id="aSave">Add transaction</button><button class="btn" type="button" id="aCancel">Cancel</button></div>
+    </form>
+    <form id="wForm" novalidate>
+          <div class="row2">
+            <div class="field"><label for="wName">Account name</label><input type="text" id="wName" maxlength="30" placeholder="BPI Savings" autocomplete="off"></div>
+            <div class="field"><label for="wType">Type</label>
+              <select id="wType"><option>Cash</option><option>Bank</option><option>E-wallet</option><option>Credit card</option><option>Savings</option><option>Other</option></select></div>
+          </div>
+          <div class="row2">
+            <div class="field"><label for="wCur">Currency</label><select id="wCur"></select></div>
+            <div class="field"><label for="wOpen" id="wOpenL">Opening balance</label><input type="text" id="wOpen" inputmode="decimal" placeholder="0.00" autocomplete="off"><small class="hint" id="wOpenH">Use a minus if the account is overdrawn.</small></div>
+          </div>
+          <div class="row2"><div class="field"><label for="wLast4">Last 4 digits (optional)</label><input type="text" id="wLast4" inputmode="numeric" maxlength="4" placeholder="1234" autocomplete="off"></div><div class="field"><label for="wExp">Card expiry (optional)</label><input type="text" id="wExp" maxlength="5" placeholder="MM/YY" autocomplete="off"></div></div>
+          <div id="wCardBox" hidden>
+            <div class="field"><label for="wLimit">Credit limit (optional)</label><input type="text" id="wLimit" inputmode="decimal" placeholder="0.00" autocomplete="off"></div>
+            <div class="row2" style="margin-top:10px"><div class="field"><label for="wStmt">Statement day (1-31)</label><input type="text" id="wStmt" inputmode="numeric" maxlength="2" placeholder="e.g. 15" autocomplete="off"></div><div class="field"><label for="wDue">Payment due day (1-31)</label><input type="text" id="wDue" inputmode="numeric" maxlength="2" placeholder="e.g. 5" autocomplete="off"></div></div>
+          </div>
+          <p class="err" id="wErr" role="alert"></p>
+          <div class="formbtns"><button class="btn primary" type="submit" id="wAdd">Add account</button><button class="btn" type="button" id="wCancel">Cancel</button><button class="btn" type="button" id="wDel" hidden>Delete account</button></div>
+        </form>
+    </div>
+    <aside id="aHist" aria-labelledby="aHistT" hidden>
+      <div class="hhead"><h3 id="aHistT">Transactions</h3><div class="hright"><span class="hcount" id="aHistN"></span><button type="button" class="btn sm selbtn" id="aHistSel" aria-pressed="false">Select</button></div></div>
+      <div class="hfilt" role="group" aria-label="Filter transactions">
+        <button type="button" data-hk="all" aria-pressed="true">All</button>
+        <button type="button" data-hk="out" aria-pressed="false">Expense</button>
+        <button type="button" data-hk="in" aria-pressed="false">Income</button>
+        <button type="button" data-hk="xfer" aria-pressed="false">Transfer</button>
+      </div>
+      <div class="bulkbar" id="aHistBulk" role="group" aria-label="Bulk actions" hidden></div>
+      <div class="hlist" id="aHistList"></div>
+    </aside>
+  </dialog>
+
+  <dialog id="catDlg" aria-labelledby="catDlgT">
+    <div class="dlghead"><h3 id="catDlgT">Add category or subcategory</h3><button type="button" class="btn icon sm" id="catClose" aria-label="Close">✕</button></div>
+    <div class="dtabs" id="catKind" role="group" aria-label="Category type">
+      <button type="button" data-ck="out" aria-pressed="true">Expense</button>
+      <button type="button" data-ck="in" aria-pressed="false">Income</button>
+    </div>
+    <div class="catform">
+      <div class="field"><label for="catNew">New category</label>
+        <div class="catrow"><input type="text" id="catNew" maxlength="40" placeholder="e.g. Pets" autocomplete="off"><button type="button" class="btn primary" id="catAdd">Add</button></div></div>
+      <div class="field"><label for="catParent">New subcategory</label>
+        <div class="catrow"><select id="catParent" aria-label="Category for the new subcategory"></select><input type="text" id="subNew" maxlength="40" placeholder="e.g. Vet" autocomplete="off" aria-label="Subcategory name"></div>
+        <small class="hint" id="catExisting"></small></div>
+      <button type="button" class="btn" id="subAdd">Add subcategory</button>
+      <p class="err" id="catErr" role="alert"></p>
+      <p class="status" id="catMsg" role="status"></p>
+      <h4>Your additions</h4>
+      <ul class="catlist" id="catMine"></ul>
+    </div>
+  </dialog>
+
+<script src="vendor/xlsx.full.min.js"></script>
+<script src="shim.js"></script><script src="app.js"></script>
+
+
+
+<script src="extras.js"></script></body></html>
